@@ -82,14 +82,14 @@ void DisplaySysInfo::displaySensorPlot()
 
 void DisplaySysInfo::drawARMSensorCurve()
 {
-    if (getNode->armuW > 0 && getNode->armuW < 10) {
-        if (armPlotData.index < 99) {
-            armPlotData.yData[armPlotData.index] = getNode->armuW;
+    if (getNode->arm_uW > 0 && getNode->arm_uW < 10) {
+        if (armPlotData.index < NB_POINT_PLOT - 1) {
+            armPlotData.yData[armPlotData.index] = getNode->arm_uW;
             armPlotData.xData[armPlotData.index] = armPlotData.index;
             armPlotData.index++;
         } else {
-            armPlotData.yData[99] = getNode->armuW;
-            for (int i = 0; i < 100; i++) {
+            armPlotData.yData[NB_POINT_PLOT - 1] = getNode->arm_uW;
+            for (int i = 0; i < NB_POINT_PLOT - 1; i++) {
                 armPlotData.yData[i] = armPlotData.yData[i + 1];
             }
         }
@@ -101,14 +101,14 @@ void DisplaySysInfo::drawARMSensorCurve()
 
 void DisplaySysInfo::drawMEMSensorCurve()
 {
-    if (getNode->memuW > 0 && getNode->memuW < 10) {
-        if (memPlotData.index < 99) {
-            memPlotData.yData[memPlotData.index] = getNode->memuW;
+    if (getNode->mem_uW > 0 && getNode->mem_uW < 10) {
+        if (memPlotData.index < NB_POINT_PLOT - 1) {
+            memPlotData.yData[memPlotData.index] = getNode->mem_uW;
             memPlotData.xData[memPlotData.index] = memPlotData.index;
             memPlotData.index++;
         } else {
-            memPlotData.yData[99] = getNode->memuW;
-            for (int i = 0; i < 100; i++) {
+            memPlotData.yData[NB_POINT_PLOT - 1] = getNode->mem_uW;
+            for (int i = 0; i < NB_POINT_PLOT - 1; i++) {
                 memPlotData.yData[i] = memPlotData.yData[i + 1];
             }
         }
@@ -120,14 +120,14 @@ void DisplaySysInfo::drawMEMSensorCurve()
 
 void DisplaySysInfo::drawKFCSensorCurve()
 {
-    if (getNode->kfcuW > 0 && getNode->kfcuW < 10) {
-        if (kfcPlotData.index < 99) {
-            kfcPlotData.yData[kfcPlotData.index] = getNode->kfcuW;
+    if (getNode->kfc_uW > 0 && getNode->kfc_uW < 10) {
+        if (kfcPlotData.index < NB_POINT_PLOT - 1) {
+            kfcPlotData.yData[kfcPlotData.index] = getNode->kfc_uW;
             kfcPlotData.xData[kfcPlotData.index] = kfcPlotData.index;
             kfcPlotData.index++;
         } else {
-            kfcPlotData.yData[99] = getNode->kfcuW;
-            for (int i = 0; i < 100; i++) {
+            kfcPlotData.yData[NB_POINT_PLOT - 1] = getNode->kfc_uW;
+            for (int i = 0; i < NB_POINT_PLOT - 1; i++) {
                 kfcPlotData.yData[i] = kfcPlotData.yData[i + 1];
             }
         }
@@ -139,14 +139,14 @@ void DisplaySysInfo::drawKFCSensorCurve()
 
 void DisplaySysInfo::drawG3DSensorCurve()
 {
-    if (getNode->g3duW > 0 && getNode->g3duW < 10) {
-        if (g3dPlotData.index < 99) {
-            g3dPlotData.yData[g3dPlotData.index] = getNode->g3duW;
+    if (getNode->g3d_uW > 0 && getNode->g3d_uW < 10) {
+        if (g3dPlotData.index < NB_POINT_PLOT - 1) {
+            g3dPlotData.yData[g3dPlotData.index] = getNode->g3d_uW;
             g3dPlotData.xData[g3dPlotData.index] = g3dPlotData.index;
             g3dPlotData.index++;
         } else {
-            g3dPlotData.yData[99] = getNode->g3duW;
-            for (int i = 0; i < 100; i++) {
+            g3dPlotData.yData[NB_POINT_PLOT - 1] = getNode->g3d_uW;
+            for (int i = 0; i < NB_POINT_PLOT - 1; i++) {
                 g3dPlotData.yData[i] = g3dPlotData.yData[i + 1];
             }
         }
@@ -162,52 +162,52 @@ void DisplaySysInfo::DisplaySensor()
 
     float2string();
 
-    ui->ARMuVlcd->setPalette(QColor(100, 100, 100));
-    ui->ARMuAlcd->setPalette(QColor(100, 100, 100));
+    ui->ARMmVlcd->setPalette(QColor(100, 100, 100));
+    ui->ARMmAlcd->setPalette(QColor(100, 100, 100));
     ui->ARMuWlcd->setPalette(QColor(100, 100, 100));
-    ui->ARMuVlcd->display(a15Volt);
-    ui->ARMuAlcd->display(a15Ampere);
+    ui->ARMmVlcd->display(a15Volt);
+    ui->ARMmAlcd->display(a15Ampere);
     ui->ARMuWlcd->display(a15Watt);
 
-    ui->KFCuVlcd->setPalette(QColor(100, 100, 100));
-    ui->KFCuAlcd->setPalette(QColor(100, 100, 100));
+    ui->KFCmVlcd->setPalette(QColor(100, 100, 100));
+    ui->KFCmAlcd->setPalette(QColor(100, 100, 100));
     ui->KFCuWlcd->setPalette(QColor(100, 100, 100));
-    ui->KFCuVlcd->display(a7Volt);
-    ui->KFCuAlcd->display(a7Ampere);
+    ui->KFCmVlcd->display(a7Volt);
+    ui->KFCmAlcd->display(a7Ampere);
     ui->KFCuWlcd->display(a7Watt);
 
-    ui->G3DuVlcd->setPalette(QColor(100, 100, 100));
-    ui->G3DuAlcd->setPalette(QColor(100, 100, 100));
+    ui->G3DmVlcd->setPalette(QColor(100, 100, 100));
+    ui->G3DmAlcd->setPalette(QColor(100, 100, 100));
     ui->G3DuWlcd->setPalette(QColor(100, 100, 100));
-    ui->G3DuVlcd->display(gpuVolt);
-    ui->G3DuAlcd->display(gpuAmpere);
+    ui->G3DmVlcd->display(gpuVolt);
+    ui->G3DmAlcd->display(gpuAmpere);
     ui->G3DuWlcd->display(gpuWatt);
 
-    ui->MEMuVlcd->setPalette(QColor(100, 100, 100));
-    ui->MEMuAlcd->setPalette(QColor(100, 100, 100));
+    ui->MEMmVlcd->setPalette(QColor(100, 100, 100));
+    ui->MEMmAlcd->setPalette(QColor(100, 100, 100));
     ui->MEMuWlcd->setPalette(QColor(100, 100, 100));
-    ui->MEMuVlcd->display(memVolt);
-    ui->MEMuAlcd->display(memAmpere);
+    ui->MEMmVlcd->display(memVolt);
+    ui->MEMmAlcd->display(memAmpere);
     ui->MEMuWlcd->display(memWatt);
 }
 
 void DisplaySysInfo::float2string()
 {
-    a15Volt.sprintf("%.3f", getNode->armuV);
-    a15Ampere.sprintf("%.3f", getNode->armuA);
-    a15Watt.sprintf("%.3f", getNode->armuW);
+    a15Volt = QString("%1").arg(getNode->arm_mV, 0, 'f', 3);
+    a15Ampere = QString("%1").arg(getNode->arm_mA, 0, 'f', 3);
+    a15Watt = QString("%1").arg(getNode->arm_uW, 0, 'f', 3);
 
-    a7Volt.sprintf("%.3f", getNode->kfcuV);
-    a7Ampere.sprintf("%.3f", getNode->kfcuA);
-    a7Watt.sprintf("%.3f", getNode->kfcuW);
+    a7Volt = QString("%1").arg(getNode->kfc_mV, 0, 'f', 3);
+    a7Ampere = QString("%1").arg(getNode->kfc_mA, 0, 'f', 3);
+    a7Watt = QString("%1").arg(getNode->kfc_uW, 0, 'f', 3);
 
-    gpuVolt.sprintf("%.3f", getNode->g3duV);
-    gpuAmpere.sprintf("%.3f", getNode->g3duA);
-    gpuWatt.sprintf("%.3f", getNode->g3duW);
+    gpuVolt = QString("%1").arg(getNode->g3d_mV, 0, 'f', 3);
+    gpuAmpere = QString("%1").arg(getNode->g3d_mA, 0, 'f', 3);
+    gpuWatt = QString("%1").arg(getNode->g3d_uW, 0, 'f', 3);
 
-    memVolt.sprintf("%.3f", getNode->memuV);
-    memAmpere.sprintf("%.3f", getNode->memuA);
-    memWatt.sprintf("%.3f", getNode->memuW);
+    memVolt = QString("%1").arg(getNode->mem_mV, 0, 'f', 3);
+    memAmpere = QString("%1").arg(getNode->mem_mA, 0, 'f', 3);
+    memWatt = QString("%1").arg(getNode->mem_uW, 0, 'f', 3);
 }
 
 void DisplaySysInfo::displayCpuFrequency()

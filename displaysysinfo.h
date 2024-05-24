@@ -11,9 +11,11 @@ namespace Ui {
 class DisplaySysInfo;
 }
 
+#define NB_POINT_PLOT   100
+
 typedef struct plotdata {
-    double xData[100];
-    double yData[100];
+    double xData[NB_POINT_PLOT];
+    double yData[NB_POINT_PLOT];
     int index;
     float Watt;
 } plotdata;

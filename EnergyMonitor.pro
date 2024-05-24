@@ -5,7 +5,7 @@
 CONFIG += qwt
 
 TEMPLATE = app
-TARGET =
+TARGET = EnergyMonitor
 DEPENDPATH += .
 INCLUDEPATH += .
 
@@ -13,3 +13,4 @@ INCLUDEPATH += .
 HEADERS += displaysysinfo.h getnode.h
 FORMS += displaysysinfo.ui
 SOURCES += displaysysinfo.cpp getnode.cpp main.cpp
+QT += widgets

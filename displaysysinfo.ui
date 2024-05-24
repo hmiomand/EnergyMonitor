@@ -383,7 +383,7 @@
     <bool>true</bool>
    </property>
   </widget>
-  <widget class="QLCDNumber" name="ARMuVlcd">
+  <widget class="QLCDNumber" name="ARMmVlcd">
    <property name="geometry">
     <rect>
      <x>353</x>
@@ -396,7 +396,7 @@
     <string notr="true"/>
    </property>
   </widget>
-  <widget class="QLCDNumber" name="ARMuAlcd">
+  <widget class="QLCDNumber" name="ARMmAlcd">
    <property name="geometry">
     <rect>
      <x>353</x>
@@ -426,7 +426,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QLCDNumber" name="MEMuVlcd">
+  <widget class="QLCDNumber" name="MEMmVlcd">
    <property name="geometry">
     <rect>
      <x>562</x>
@@ -439,7 +439,7 @@
     <string notr="true">color: rgb(60, 69, 203);</string>
    </property>
   </widget>
-  <widget class="QLCDNumber" name="MEMuAlcd">
+  <widget class="QLCDNumber" name="MEMmAlcd">
    <property name="geometry">
     <rect>
      <x>562</x>
@@ -459,7 +459,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QLCDNumber" name="KFCuVlcd">
+  <widget class="QLCDNumber" name="KFCmVlcd">
    <property name="geometry">
     <rect>
      <x>423</x>
@@ -469,7 +469,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QLCDNumber" name="KFCuAlcd">
+  <widget class="QLCDNumber" name="KFCmAlcd">
    <property name="geometry">
     <rect>
      <x>423</x>
@@ -489,7 +489,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QLCDNumber" name="G3DuAlcd">
+  <widget class="QLCDNumber" name="G3DmAlcd">
    <property name="geometry">
     <rect>
      <x>493</x>
@@ -499,7 +499,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QLCDNumber" name="G3DuVlcd">
+  <widget class="QLCDNumber" name="G3DmVlcd">
    <property name="geometry">
     <rect>
      <x>493</x>

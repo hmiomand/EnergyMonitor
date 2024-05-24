@@ -8,14 +8,15 @@
 #include <QProcess>
 #include <QSysInfo>
 
-GetNode::GetNode()
-{
-    usage[8] = {0,};
+const char* HWMON_ARM[] = {HWMON_ARM_mV, HWMON_ARM_mA, HWMON_ARM_uW};
+const char* HWMON_MEM[] = {HWMON_MEM_mV, HWMON_MEM_mA, HWMON_MEM_uW};
+const char* HWMON_G3D[] = {HWMON_G3D_mV, HWMON_G3D_mA, HWMON_G3D_uW};
+const char* HWMON_KFC[] = {HWMON_KFC_mV, HWMON_KFC_mA, HWMON_KFC_uW};
 
+GetNode::GetNode(): usage()
+{
     for (int i = 0; i < 8; i++) {
-        QString temp;
-        temp.sprintf("/sys/devices/system/cpu/cpu%d/cpufreq/cpuinfo_cur_freq", i);
-        cpu_node_list[i] = temp;
+        cpu_node_list[i] = QString("/sys/devices/system/cpu/cpu%1/cpufreq/scaling_cur_freq").arg(i);
     }
 }
 
@@ -42,21 +43,18 @@ void GetNode::GetSystemInfo()
 
 QString GetNode::GetGPUCurFreq()
 {
+    // Measure seems to be invalid
 
     QFile *fp;
     QString freq;
 
-    if (kernel_ver[0] == '4') {
-        freq.sprintf("%d", 600);
-    } else {
-        fp = new QFile(GPUFREQ_NODE);
-        if (!fp->open(QIODevice::ReadOnly))
-            return 0;
-        freq = fp->readLine();
-        freq.sprintf("%d", freq.toInt());
-        fp->close();
-        delete fp;
-    }
+    fp = new QFile(GPUFREQ_NODE);
+    if (!fp->open(QIODevice::ReadOnly))
+        return 0;
+    freq = fp->readLine();
+    freq = QString("%1").arg(freq.toInt() / 1000000);
+    fp->close();
+    delete fp;
 
     return freq;
 }
@@ -70,8 +68,7 @@ QString GetNode::GetCPUCurFreq(int cpuNum)
         return 0;
 
     freq = fp->readLine();
-    freq.sprintf("%d", freq.toInt()/1000);
-
+    freq = QString("%1").arg(freq.toInt()/1000);
     fp->close();
 
     delete fp;
@@ -84,92 +81,69 @@ QString GetNode::GetCPUTemp(int cpuNum)
 
     char buf[16];
 
-    if (kernel_ver[0] == '4') {
-        fp = new QFile(TEMP_NODE_v4 + QString::number(cpuNum) + "/temp");
+    fp = new QFile(TEMP_NODE + QString::number(cpuNum) + "/temp");
 
-        if (!fp->open(QIODevice::ReadOnly)) {
-            return 0;
-        }
-
-        fp->read(buf, 2);
-        buf[2] = '\0';
-        fp->close();
-        delete fp;
-
-        return buf;
-    } else {
-        fp = new QFile(TEMP_NODE);
-
-        if (!fp->open(QIODevice::ReadOnly)) {
-            return 0;
-        }
-
-        for (int i = 0; i < cpuNum + 1; i++)
-            fp->read(buf, 16);
-        fp->close();
-        delete fp;
-        buf[12] = '\0';
-
-        return &buf[10];
+    if (!fp->open(QIODevice::ReadOnly)) {
+        return 0;
     }
+
+    fp->read(buf, 2);
+    buf[2] = '\0';
+    fp->close();
+    delete fp;
+
+    return buf;
 }
 
 
-int GetNode::open_sensor(const char *node, sensor_t *sensor)
+int GetNode::open_sensor(const char *node, sensor_t *sensor, int unit)
 {
-    if ((sensor->fd = open(node, O_RDWR)) < 0)
+    if ((sensor->fd[unit] = open(node, O_RDONLY)) < 0)
         qDebug() << node << "Open Fail";
 
-    return sensor->fd;
+    return sensor->fd[unit];
 }
 
 int GetNode::OpenINA231()
 {
-    if (open_sensor(DEV_SENSOR_ARM, &sensor[SENSOR_ARM]) < 0)
-        return -1;
-    if (open_sensor(DEV_SENSOR_MEM, &sensor[SENSOR_MEM]) < 0)
-        return -1;
-    if (open_sensor(DEV_SENSOR_KFC, &sensor[SENSOR_KFC]) < 0)
-        return -1;
-    if (open_sensor(DEV_SENSOR_G3D, &sensor[SENSOR_G3D]) < 0)
-        return -1;
-
-    if (read_sensor_status(&sensor[SENSOR_ARM]))
-        return -1;
-    if (read_sensor_status(&sensor[SENSOR_MEM]))
-        return -1;
-    if (read_sensor_status(&sensor[SENSOR_KFC]))
-        return -1;
-    if (read_sensor_status(&sensor[SENSOR_G3D]))
-        return -1;
-
-    if (!sensor[SENSOR_ARM].data.enable)
-        enable_sensor(&sensor[SENSOR_ARM], 1);
-    if (!sensor[SENSOR_MEM].data.enable)
-        enable_sensor(&sensor[SENSOR_MEM], 1);
-    if (!sensor[SENSOR_KFC].data.enable)
-        enable_sensor(&sensor[SENSOR_KFC], 1);
-    if (!sensor[SENSOR_G3D].data.enable)
-        enable_sensor(&sensor[SENSOR_G3D], 1);
+    for (int i = 0; i < NB_UNIT; i++) {
+        if (open_sensor(HWMON_ARM[i], &sensor[SENSOR_ARM], i) < 0) {
+            return -1;
+        }
+    }
+    for (int i = 0; i < NB_UNIT; i++) {
+        if (open_sensor(HWMON_MEM[i], &sensor[SENSOR_MEM], i) < 0) {
+            return -1;
+        }
+    }
+    for (int i = 0; i < NB_UNIT; i++) {
+        if (open_sensor(HWMON_KFC[i], &sensor[SENSOR_KFC], i) < 0) {
+            return -1;
+        }
+    }
+    for (int i = 0; i < NB_UNIT; i++) {
+        if (open_sensor(HWMON_G3D[i], &sensor[SENSOR_G3D], i) < 0) {
+            return -1;
+        }
+    }
 
     return 0;
 }
 
 void GetNode::CloseINA231()
 {
-    if (sensor[SENSOR_ARM].data.enable)
-        enable_sensor(&sensor[SENSOR_ARM], 0);
-    if (sensor[SENSOR_MEM].data.enable)
-        enable_sensor(&sensor[SENSOR_MEM], 0);
-    if (sensor[SENSOR_KFC].data.enable)
-        enable_sensor(&sensor[SENSOR_KFC], 0);
-    if (sensor[SENSOR_G3D].data.enable)
-        enable_sensor(&sensor[SENSOR_G3D], 0);
-
-    close_sensor(&sensor[SENSOR_ARM]);
-    close_sensor(&sensor[SENSOR_MEM]);
-    close_sensor(&sensor[SENSOR_KFC]);
-    close_sensor(&sensor[SENSOR_G3D]);
+    for (int i = 0; i < NB_UNIT; i++) {
+        close_sensor(&sensor[SENSOR_ARM], i);
+    }
+    for (int i = 0; i < NB_UNIT; i++) {
+        close_sensor(&sensor[SENSOR_MEM], i);
+    }
+    for (int i = 0; i < NB_UNIT; i++) {
+        close_sensor(&sensor[SENSOR_KFC], i);
+    }
+    for (int i = 0; i < NB_UNIT; i++) {
+        close_sensor(&sensor[SENSOR_G3D], i);
+    }
 }
 
 void GetNode::GetINA231()
@@ -179,57 +153,70 @@ void GetNode::GetINA231()
     read_sensor(&sensor[SENSOR_KFC]);
     read_sensor(&sensor[SENSOR_G3D]);
 
-    armuV = (float)(sensor[SENSOR_ARM].data.cur_uV / 100000) / 10;
-    armuA = (float)(sensor[SENSOR_ARM].data.cur_uA / 1000) / 1000;
-    armuW = (float)(sensor[SENSOR_ARM].data.cur_uW / 1000) / 1000;
+    arm_mV = (float)(sensor[SENSOR_ARM].data.cur_mV / 100) / 10;
+    arm_mA = (float)(sensor[SENSOR_ARM].data.cur_mA / 1) / 1000;
+    arm_uW = (float)(sensor[SENSOR_ARM].data.cur_uW / 1000) / 1000;
 
-    memuV = (float)(sensor[SENSOR_MEM].data.cur_uV / 100000) / 10;
-    memuA = (float)(sensor[SENSOR_MEM].data.cur_uA / 1000) / 1000;
-    memuW = (float)(sensor[SENSOR_MEM].data.cur_uW / 1000) / 1000;
+    mem_mV = (float)(sensor[SENSOR_MEM].data.cur_mV / 100) / 10;
+    mem_mA = (float)(sensor[SENSOR_MEM].data.cur_mA / 1) / 1000;
+    mem_uW = (float)(sensor[SENSOR_MEM].data.cur_uW / 1000) / 1000;
 
-    kfcuV = (float)(sensor[SENSOR_KFC].data.cur_uV / 100000) / 10;
-    kfcuA = (float)(sensor[SENSOR_KFC].data.cur_uA / 1000) / 1000;
-    kfcuW = (float)(sensor[SENSOR_KFC].data.cur_uW / 1000) / 1000;
+    kfc_mV = (float)(sensor[SENSOR_KFC].data.cur_mV / 100) / 10;
+    kfc_mA = (float)(sensor[SENSOR_KFC].data.cur_mA / 1) / 1000;
+    kfc_uW = (float)(sensor[SENSOR_KFC].data.cur_uW / 1000) / 1000;
 
-    g3duV = (float)(sensor[SENSOR_G3D].data.cur_uV / 100000) / 10;
-    g3duA = (float)(sensor[SENSOR_G3D].data.cur_uA / 1000) / 1000;
-    g3duW = (float)(sensor[SENSOR_G3D].data.cur_uW / 1000) / 1000;
+    g3d_mV = (float)(sensor[SENSOR_G3D].data.cur_mV / 100) / 10;
+    g3d_mA = (float)(sensor[SENSOR_G3D].data.cur_mA / 1) / 1000;
+    g3d_uW = (float)(sensor[SENSOR_G3D].data.cur_uW / 1000) / 1000;
 
-}
-
-void GetNode::enable_sensor(sensor_t *sensor, unsigned char enable)
-{
-    if (sensor->fd > 0) {
-        sensor->data.enable = enable ? 1 : 0;
-        if (ioctl(sensor->fd, INA231_IOCSSTATUS, &sensor->data) < 0)
-            qDebug() << "IOCTL Error";
-    }
-}
-
-int GetNode::read_sensor_status(sensor_t *sensor)
-{
-    if (sensor->fd > 0) {
-        if (ioctl(sensor->fd, INA231_IOCGSTATUS, &sensor->data) < 0)
-            qDebug() << sensor->data.name << "IOCTL Error";
-    }
-    return 0;
 }
 
 void GetNode::read_sensor(sensor_t *sensor)
 {
-    if (sensor->fd > 0) {
-        if (ioctl(sensor->fd, INA231_IOCGREG, &sensor->data) < 0)
-            qDebug() << sensor->data.name << "IOCTL Error!";
+    // Read voltage in mV
+    if (sensor->fd[VOLT] > 0) {
+
+        char buffer[20];
+        memset(buffer, 0, 20);
+
+        if (pread(sensor->fd[VOLT], buffer, 20, 0) < 0) {
+            qDebug() << "Sensor reading Error!";
+        }
+        sensor->data.cur_mV = atoi(buffer);
+    }
+
+    // Read current in mA
+    if (sensor->fd[AMP] > 0) {
+
+        char buffer[20];
+        memset(buffer, 0, 20);
+
+        if (pread(sensor->fd[AMP], buffer, 20, 0) < 0) {
+            qDebug() << "Sensor reading Error!";
+        }
+        sensor->data.cur_mA = atoi(buffer);
+    }
+
+    // Read power in uW
+    if (sensor->fd[WATT] > 0) {
+
+        char buffer[20];
+        memset(buffer, 0, 20);
+
+        if (pread(sensor->fd[WATT], buffer, 20, 0) < 0) {
+            qDebug() << "Sensor reading Error!";
+        }
+        sensor->data.cur_uW = atoi(buffer);
     }
 }
 
-void GetNode::close_sensor(sensor_t *sensor)
+void GetNode::close_sensor(sensor_t *sensor, int unit)
 {
-    if (sensor->fd > 0)
-        close(sensor->fd);
+    if (sensor->fd[unit] > 0)
+        close(sensor->fd[unit]);
 }
 
-int GetNode::calUsage(int cpu_idx, int user, int nice, int system, int idle)
+int GetNode::calUsage(int cpu_idx, int user, int nice __attribute__((unused)), int system, int idle)
 {
     long total = 0;
     long usage = 0;
@@ -253,7 +240,7 @@ int GetNode::calUsage(int cpu_idx, int user, int nice, int system, int idle)
 int GetNode::GetCPUUsage(void)
 {
     char buf[80] = {0,};
-    char cpuid[8] = "cpu";
+    char cpuid[] = "cpu";
     int findCPU = 0;
     int user, system, nice, idle;
     FILE *fp;
