@@ -542,7 +542,7 @@
     </font>
    </property>
    <property name="text">
-    <string>Ampare</string>
+    <string>Ampere</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_12">
